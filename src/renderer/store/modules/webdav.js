@@ -17,6 +17,7 @@ const state = {
   filesToSync: [],
   strategy: 'overwrite_older',
   fileAgeTolerance: 5000,
+  autoSync: false,
   webdav: {
     url: '',
     username: '',

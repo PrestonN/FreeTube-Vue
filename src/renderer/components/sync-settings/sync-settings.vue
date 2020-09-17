@@ -10,7 +10,7 @@
         <ft-toggle-switch
           :label="$t('Settings.Sync Settings.Synchronize Subscriptions')"
           :default-value="syncSubscriptions"
-          @change="updateSyncSubscriptions"
+          @change="handleSyncSubscriptionsChange"
         />
         <ft-toggle-switch
           :label="$t('Settings.Sync Settings.Synchronize History')"

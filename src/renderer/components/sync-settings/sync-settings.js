@@ -92,11 +92,39 @@ export default Vue.extend({
 
   },
   mounted: function () {
-    this.updateWebdavServerUrlBounce = debounce(this.updateWebdavServerUrl, 500)
-    this.updateWebdavServerDirBounce = debounce(this.updateWebdavServerDir, 500)
-    this.updateWebdavUsernameBounce = debounce(this.updateWebdavUsername, 500)
-    this.updateWebdavPasswordBounce = debounce(this.updateWebdavPassword, 500)
-    // this.currentSyncStrategy = localStorage.getItem('syncStrategy')
+
+    this.updateWebdavServerUrlBounce = debounce(webdavServerUrl => {
+      this.setWebdavServerUrl(webdavServerUrl)
+      this.updateWebdavServerUrl(webdavServerUrl)
+    }, 500)
+
+    this.updateWebdavServerDirBounce = debounce(webdavServerDir => {
+      this.setWebdavServerDir(webdavServerUrl)
+      this.updateWebdavServerDir(webdavServerDir)
+    }, 500)
+
+    this.updateWebdavUsernameBounce = debounce(webdavUsername => {
+      this.setWebdavUsername(webdavUsername)
+      this.updateWebdavUsername(webdavUsername)
+    }, 500)
+
+    this.updateWebdavPasswordBounce = debounce(webdavPassword => {
+      this.setWebdavPassword(webdavPassword)
+      this.updateWebdavPassword(webdavPassword)
+    }, 500)
+
+    this.setWebdavServerUrl(this.webdavServerUrl)
+    this.setWebdavServerDir(this.webdavServerDir)
+    this.setWebdavUsername(this.webdavUsername)
+    this.setWebdavPassword(this.webdavPassword)
+    this.setSyncSubscriptions(this.syncSubscriptions)
+    this.setSyncHistory(this.syncHistory)
+    this.setSyncSettings(this.syncSettings)
+    this.setSyncPreferences(this.syncPreferences)
+    this.setWebdavDigestAuth(this.webdavDigestAuth)
+    this.setAutoSync(this.autoSync)
+    this.setSyncStrategy(this.syncStrategy)
+
   },
   methods: {
 
@@ -116,25 +144,39 @@ export default Vue.extend({
       const webdavPassword = input
       this.updateWebdavPasswordBounce(webdavPassword)
     },
-
-    triggerSync: function() {
-      // await freeTubeCfgSync.sync()
+    handleSyncSubscriptionsChange: function (input) {
+      this.setSyncSubscriptions(input)
+      this.updateSyncSubscriptions(input)
+    },
+    handleSyncSettingsChange: function (input) {
+      this.setSyncSettings(input)
+      this.updateSyncSettings(input)
+    },
+    handleSyncHistoryChange: function (input) {
+      this.setSyncHistory(input)
+      this.updateSyncHistory(input)
+    },
+    handleSyncPreferencesChange: function (input) {
+      this.setSyncPreferences(input)
+      this.updateSyncPreferences(input)
+    },
+    handleWebdavDigestAuthChange: function (input) {
+      this.setWebdavDigestAuth(input)
+      this.updateWebdavDigestAuth(input)
+    },
+    handleAutoSyncChange: function (input) {
+      this.setAutoSync(input)
+      this.updateAutoSync(input)
+    },
+    handleSyncStrategyChange: function (input) {
+      this.setSyncStrategy(input)
+      this.updateSyncStrategy(input)
     },
 
-    /*updateSyncStrategy: function (strategy) {
+    triggerSync: async function() {
+      await sync()
+    },
 
-      const payload = {
-        syncStrategy: strategy
-      }
-
-      this.$parent.$parent.syncStrategy(payload)
-      this.currentSyncStrategy = strategy
-    },*/
-
-    /*updateSyncStrategy: function (syncStrategy) {
-      this.currentSyncStrategy = syncStrategy
-      localStorage.setItem('syncStrategy', syncStrategy)
-    },*/
 
     ...mapActions([
       'updateSyncSubscriptions',
@@ -147,7 +189,18 @@ export default Vue.extend({
       'updateWebdavServerDir',
       'updateWebdavUsername',
       'updateWebdavPassword',
-      'updateWebdavDigestAuth'
+      'updateWebdavDigestAuth',
+      'setWebdavDigestAuth',
+      'setWebdavServerUrl',
+      'setWebdavServerDir',
+      'setWebdavUsername',
+      'setWebdavPassword',
+      'setWebdavDigestAuth',
+      'setRemoteDir',
+      'addSyncType',
+      'removeSyncType',
+      'setSyncStrategy',
+      'sync'
     ])
   }
 })
