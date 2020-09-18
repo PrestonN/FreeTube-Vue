@@ -13,16 +13,16 @@ const state = {
   localDir: electron.remote.app.getPath('userData'),
 
    // TODO: load values from settings
-  remoteDir: '',
+  remoteDir: null,
   filesToSync: [],
-  strategy: 'overwrite_older',
+  strategy: null,
   fileAgeTolerance: 5000,
-  autoSync: false,
+  autoSync: null,
   webdav: {
-    url: '',
-    username: '',
-    password: '',
-    digest: true
+    url: null,
+    username: null,
+    password: null,
+    digest: null
   },
   client: null
 }
@@ -86,44 +86,13 @@ async function syncOverwriteOlder() {
 }
 
 const actions = {
-  setRemoteDir(remoteDir) {
-    state.remoteDir = remoteDir
-  },
-  addSyncType(syncType) {
-    const fileName = fileMap[syncType]
-    if (typeof fileName !== 'undefined' && !state.filesToSync.includes(fileName))
-      state.filesToSync.push(fileName)
-  },
-  removeSyncType(syncType) {
-    const fileName = fileMap[syncType]
-    if (typeof fileName !== 'undefined' && state.filesToSync.includes(fileName))
-      delete state.filesToSync[fileName]
-  },
-  setSyncStrategy(syncStrategy) {
-    state.syncStrategy = syncStrategy
-  },
-  setWebdavServerUrl(webdavServerUrl) {
-    state.webdav.url = webdavServerUrl
-    login()
-  },
-  setWebdavUsername(webdavUsername) {
-    state.webdav.username = webdavUsername
-    login()
-  },
-  setWebdavPassword(webdavPassword) {
-    state.webdav.password = webdavPassword
-    login()
-  },
-  setWebdavDigestAuth(digestAuthState) {
-    state.webdav.digest = digestAuthState
-    login()
-  },
   async sync() {
     if (state.client) {
-      if (await state.client.exists(state.remoteDir) === false) {
-        await state.client.createDirectory(state.remoteDir)
+      if (await state.client.exists(state.remoteDir + '/') === false) {
+        await state.client.createDirectory(state.remoteDir + '/')
       }
-      if (state.state === 'overwrite_older') {
+
+      if (state.strategy === 'overwrite_older') {
         await syncOverwriteOlder()
       } else if (state.strategy === 'overwrite_remote') {
         await syncOverwriteRemote()
@@ -133,6 +102,49 @@ const actions = {
     } else {
       console.error(new Error('Username, password or url are missing...'))
     }
+    console.log("STATE",state)
+  }
+}
+
+const mutations = {
+  setRemoteDir({},remoteDir) {
+    remoteDir = remoteDir.replace(/\/$/, '')
+    remoteDir = remoteDir.startsWith("/") ? remoteDir : `/${remoteDir}`
+    state.remoteDir = remoteDir
+  },
+  setSyncType({},{syncType, enable}={}) {
+    const fileName = fileMap[syncType]
+    if (typeof fileName !== 'undefined') {
+      if (enable && !state.filesToSync.includes(fileName)) {
+        state.filesToSync.push(fileName)
+      } else if (!enable && state.filesToSync.includes(fileName)) {
+        delete state.filesToSync[fileName]
+      }
+    }
+    console.log("-----setSyncType called!-----")
+    console.log("syncType:", syncType)
+    console.log("enable:", enable)
+    console.log("STATE:", state)
+    console.log("-----------------------------")
+  },
+  setSyncStrategy({},syncStrategy) {
+    state.strategy = syncStrategy
+  },
+  setWebdavServerUrl({},webdavServerUrl) {
+    state.webdav.url = webdavServerUrl.replace(/\/$/, '')
+    login()
+  },
+  setWebdavUsername({},webdavUsername) {
+    state.webdav.username = webdavUsername
+    login()
+  },
+  setWebdavPassword({},webdavPassword) {
+    state.webdav.password = webdavPassword
+    login()
+  },
+  setWebdavDigestAuth({},digestAuthState) {
+    state.webdav.digest = digestAuthState
+    login()
   }
 }
 
@@ -140,5 +152,5 @@ export default {
   state,
   getters: {},
   actions,
-  mutations: {}
+  mutations
 }

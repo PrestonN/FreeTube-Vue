@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { mapActions } from 'vuex'
+import { mapActions, mapMutations } from 'vuex'
 import FtCard from '../ft-card/ft-card.vue'
 import FtButton from '../../components/ft-button/ft-button.vue'
 import FtSelect from '../ft-select/ft-select.vue'
@@ -21,14 +21,6 @@ export default Vue.extend({
   },
   data: function () {
     return {
-      /*defaultSyncSubscriptions: false,
-      defaultSyncHistory: false,
-      defaultSyncSettings: false,
-      defaultSyncPreferences: false,
-      defaultAutoSync: false,
-      defaultWebdavDigestAuth: false,
-      defaultSyncStrategy: 'overwrite_older',
-      defaultWebdavDir: '/FreeTube/',*/
       syncStrategyValues: [
         'overwrite_older',
         'overwrite_remote',
@@ -93,47 +85,50 @@ export default Vue.extend({
   },
   mounted: function () {
 
-    this.updateWebdavServerUrlBounce = debounce(webdavServerUrl => {
+    this.updateWebdavServerUrlBounce = debounce(function(webdavServerUrl) {
       this.setWebdavServerUrl(webdavServerUrl)
       this.updateWebdavServerUrl(webdavServerUrl)
     }, 500)
 
-    this.updateWebdavServerDirBounce = debounce(webdavServerDir => {
-      this.setWebdavServerDir(webdavServerUrl)
+    this.updateWebdavServerDirBounce = debounce(function(webdavServerDir) {
+      this.setRemoteDir(webdavServerDir)
       this.updateWebdavServerDir(webdavServerDir)
     }, 500)
 
-    this.updateWebdavUsernameBounce = debounce(webdavUsername => {
+    this.updateWebdavUsernameBounce = debounce(function(webdavUsername) {
       this.setWebdavUsername(webdavUsername)
       this.updateWebdavUsername(webdavUsername)
     }, 500)
 
-    this.updateWebdavPasswordBounce = debounce(webdavPassword => {
+    this.updateWebdavPasswordBounce = debounce(function(webdavPassword) {
       this.setWebdavPassword(webdavPassword)
       this.updateWebdavPassword(webdavPassword)
     }, 500)
+
+    console.log("MOUNTED",this)
 
     this.setWebdavServerUrl(this.webdavServerUrl)
     this.setWebdavServerDir(this.webdavServerDir)
     this.setWebdavUsername(this.webdavUsername)
     this.setWebdavPassword(this.webdavPassword)
-    this.setSyncSubscriptions(this.syncSubscriptions)
-    this.setSyncHistory(this.syncHistory)
-    this.setSyncSettings(this.syncSettings)
-    this.setSyncPreferences(this.syncPreferences)
+
+    this.setSyncType({syncType: "subscriptions", enable: this.syncSubscriptions})
+    this.setSyncType({syncType: "history",  enable: this.syncHistory})
+    this.setSyncType({syncType: "settings",  enable: this.syncSettings})
+    this.setSyncType({syncType: "preferences",  enable: this.syncPreferences})
     this.setWebdavDigestAuth(this.webdavDigestAuth)
-    this.setAutoSync(this.autoSync)
     this.setSyncStrategy(this.syncStrategy)
+    this.setRemoteDir(this.webdavServerDir)
 
   },
   methods: {
 
     handleWebdavServerUrlInput: function (input) {
-      const webdavServerUrl = input.replace(/\/$/, '')
+      const webdavServerUrl = input
       this.updateWebdavServerUrlBounce(webdavServerUrl)
     },
     handleWebdavServerDirInput: function (input) {
-      const webdavServerDir = input.replace(/\/$/, '')
+      const webdavServerDir = input
       this.updateWebdavServerDirBounce(webdavServerDir)
     },
     handleWebdavUsernameInput: function (input) {
@@ -145,19 +140,19 @@ export default Vue.extend({
       this.updateWebdavPasswordBounce(webdavPassword)
     },
     handleSyncSubscriptionsChange: function (input) {
-      this.setSyncSubscriptions(input)
+      this.setSyncType({syncType: "subscriptions", enable: input})
       this.updateSyncSubscriptions(input)
     },
     handleSyncSettingsChange: function (input) {
-      this.setSyncSettings(input)
+      this.setSyncType({syncType: "settings", enable: input})
       this.updateSyncSettings(input)
     },
     handleSyncHistoryChange: function (input) {
-      this.setSyncHistory(input)
+      this.setSyncType({syncType: "history", enable: input})
       this.updateSyncHistory(input)
     },
     handleSyncPreferencesChange: function (input) {
-      this.setSyncPreferences(input)
+      this.setSyncType({syncType: "preferences", enable: input})
       this.updateSyncPreferences(input)
     },
     handleWebdavDigestAuthChange: function (input) {
@@ -174,7 +169,11 @@ export default Vue.extend({
     },
 
     triggerSync: async function() {
-      await sync()
+      try {
+        await this.sync()
+      } catch (e) {
+        console.error(e)
+      }
     },
 
 
@@ -190,6 +189,10 @@ export default Vue.extend({
       'updateWebdavUsername',
       'updateWebdavPassword',
       'updateWebdavDigestAuth',
+      'sync'
+    ]),
+
+    ...mapMutations([
       'setWebdavDigestAuth',
       'setWebdavServerUrl',
       'setWebdavServerDir',
@@ -197,10 +200,8 @@ export default Vue.extend({
       'setWebdavPassword',
       'setWebdavDigestAuth',
       'setRemoteDir',
-      'addSyncType',
-      'removeSyncType',
-      'setSyncStrategy',
-      'sync'
+      'setSyncType',
+      'setSyncStrategy'
     ])
   }
 })

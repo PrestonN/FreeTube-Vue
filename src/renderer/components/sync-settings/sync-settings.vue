@@ -15,19 +15,19 @@
         <ft-toggle-switch
           :label="$t('Settings.Sync Settings.Synchronize History')"
           :default-value="syncHistory"
-          @change="updateSyncHistory"
+          @change="handleSyncHistoryChange"
         />
       </div>
       <div class="switchColumn">
         <ft-toggle-switch
           :label="$t('Settings.Sync Settings.Synchronize Settings')"
           :default-value="syncSettings"
-          @change="updateSyncSettings"
+          @change="handleSyncSettingsChange"
         />
         <ft-toggle-switch
           :label="$t('Settings.Sync Settings.Synchronize Preferences')"
           :default-value="syncPreferences"
-          @change="updateSyncPreferences"
+          @change="handleSyncPreferencesChange"
         />
       </div>
     </div>
